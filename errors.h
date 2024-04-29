@@ -69,7 +69,7 @@ void semanticErrorInvalidType(int line, string id, int op)
         case MINUS:
         case RBAR:
         case ASTER:
-            cout << "Error semantico en la linea: " << line << ":" << " Las operaciones aritmeticas solo operan con numeros, no con valores logicos como \"" << id << "\" "<<endl;
+            cout << "Error semantico en la linea: " << line << ":" << " Las operaciones aritmeticas solo operan con numeros, no con valores como \"" << id << "\" "<<endl;
             break;
     }
 }

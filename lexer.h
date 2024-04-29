@@ -127,6 +127,14 @@ class Lexer{
             return this->errors;
         }
 
+        void showTokens()
+        {
+            for(auto i: this->tokens)
+            {
+                i.showTokenInfo();
+            }
+        }
+
 };
 
 Lexer::Lexer()
@@ -198,7 +206,12 @@ void Lexer::scan(string raw_code)
                 //isFloat = true;
                 buffer.push_back(raw_code[this->curCharIndex]);
                 this->advanceChar();
-                while(raw_code[this->curCharIndex] != ' ' && raw_code[this->curCharIndex] != '\n')
+                if(!isNum(raw_code[this->curCharIndex]))
+                {
+                        isFerror = true;
+
+                }
+                while(isNum(raw_code[this->curCharIndex]) || isAlfa(raw_code[this->curCharIndex]))
                 {
                     if(!isNum(raw_code[this->curCharIndex]))
                     {
@@ -332,9 +345,27 @@ void Lexer::scan(string raw_code)
                 this->tokens.push_back(Token(ASIGN, "<-", this->curLine));
                 this->advanceChar();
             }
+            else if(raw_code[this->curCharIndex] == '=')
+            {
+                this->tokens.push_back(Token(LEQUAL, "<=", this->curLine));
+                this->advanceChar();
+            }
             else
             {
                 this->tokens.push_back(Token(LESS, "<", this->curLine));
+            }
+        }
+        else if(raw_code[this->curCharIndex] == '>')
+        {
+            this->advanceChar();
+            if(raw_code[this->curCharIndex] == '=')
+            {
+                this->tokens.push_back(Token(BEQUAL, ">=", this->curLine));
+                this->advanceChar();
+            }
+            else
+            {
+                this->tokens.push_back(Token(BIGGER, ">", this->curLine));
             }
         }
         else if (raw_code[this->curCharIndex] == ' ' || raw_code[this->curCharIndex] == '\t')
@@ -363,6 +394,7 @@ void Lexer::scan(string raw_code)
             this->advanceChar();
         }
     }
+
 
 }
 

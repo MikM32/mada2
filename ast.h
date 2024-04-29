@@ -123,6 +123,7 @@ class AstNode
         int scope=0;
 
         AstNodeType type;
+        AstNodeType resType=ast_none;
 
     public:
 
@@ -151,6 +152,11 @@ class AstNode
             this->elem.chr = c;
             this->right = nullptr;
             this->left = nullptr;
+        }
+
+        void setElem(AstElemUnion e)
+        {
+            this->elem = e;
         }
 
         int getScope()
@@ -183,6 +189,11 @@ class AstNode
             return this->asocToken;
         }
 
+        int getOpType()
+        {
+            return this->opType;
+        }
+
         /*
         AstElemObj getInfo()
         {
@@ -192,6 +203,11 @@ class AstNode
         AstNodeType getType()
         {
             return this->type;
+        }
+
+        AstNodeType getResType()
+        {
+            return this->resType;
         }
 
         AstNode* getRight()
@@ -240,6 +256,11 @@ class AstNode
         void setType(AstNodeType type)
         {
             this->type = type;
+        }
+
+        void setResType(AstNodeType resT)
+        {
+            this->resType = resT;
         }
 
         void setToken(Token t)

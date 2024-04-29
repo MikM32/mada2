@@ -1,9 +1,11 @@
 #ifndef PARSER_H_INCLUDED
 #define PARSER_H_INCLUDED
-
-
+#include <iostream>
+#include <iomanip>
 #include "lexer.h"
 #include "ast.h"
+
+using namespace std;
 
 int strToInt(string str)
 {
@@ -99,6 +101,10 @@ class Parser
                 this->nextTok = this->tokens[this->tokIndex];
                 this->isAtEnd = true;
             }
+            else
+            {
+                this->nextTok = this->curTok;
+            }
 
         }
 
@@ -118,6 +124,7 @@ class Parser
         {
             AstNode* res = nullptr;
             double a;
+
 
             switch(this->curTok.getType())
             {
@@ -148,9 +155,22 @@ class Parser
                     res->setType(ast_var);
                     res->setToken(this->curTok);
                     break;
+                case OPEN_PAREN:    //Expresion compuesta
+                    res = this->equality();
+                    eat();
+                    if(this->curTok.getType() != CLOS_PAREN)
+                    {
+                        parseErrorExpected(this->curTok.getLine(), ")", this->curTok.getText());
+                        this->errors++;
+                        res = nullptr;
+                    }
+                    break;
 
 
                 default:
+                    parseErrorExpected(this->curTok.getLine(), "expresion", this->curTok.getText());
+                    this->errors++;
+                    res = nullptr;
                     break;
             }
 
@@ -162,21 +182,32 @@ class Parser
             AstNode* res = nullptr;
 
 
+
+
             switch(this->curTok.getType())
             {
                 case MINUS:
-                    res->setToken(this->curTok);
-                    eat();
+                    //eat();
                     res = new AstNode();
-                    res->setLeft( this->primary() );
+
+                    res->setToken(this->curTok);
+                    res->setOpType(this->curTok.getType());
+                    eat();
+                    //res = new AstNode();
+                    res->setLeft( this->unary() );
                     res->setType(ast_unop);
+
 
                     break;
                 default:
+
                     res = this->primary();
                     break;
 
             }
+
+
+
 
             return res;
         }
@@ -185,22 +216,212 @@ class Parser
         {
             AstNode* res = nullptr, *res_binop = nullptr;
 
-            eat();
+            //eat();
             res = this->unary();
-            res->setToken(this->curTok);
 
-            eat();
-            switch(this->curTok.getType())
+            if(res)
+            {
+                if(res->getToken().getType() == NONE)
+                {
+                    res->getToken().showTokenInfo();
+
+                    res->setToken(this->curTok);
+                }
+                //res->getToken().showTokenInfo();
+            }
+
+
+
+            switch(this->nextTok.getType())
             {
                 case ASTER:
+                    eat();
                     res_binop = new AstNode();
                     res_binop->setToken(this->curTok);
                     eat();
 
                     res_binop->setLeft(res);
-                    res_binop->setRight( this->unary() );
+                    res_binop->setRight( this->factor() );
                     res_binop->setType(ast_binop);
                     res_binop->setOpType(ASTER);
+
+
+                    return res_binop;
+                    break;
+                case RBAR:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->factor() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(RBAR);
+
+
+                    return res_binop;
+                    break;
+                case DIV:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->factor() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(DIV);
+
+
+                    return res_binop;
+                    break;
+                case MOD:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->factor() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(MOD);
+
+
+                    return res_binop;
+                    break;
+                default:
+                    break;
+
+            }
+
+
+            return res;
+        }
+
+        AstNode* term()
+        {
+            AstNode* res = nullptr, *res_binop = nullptr;
+            //eat();
+            res = this->factor();
+            if(res)
+            {
+                if(res->getToken().getType() == NONE)
+                {
+                    res->setToken(this->curTok);
+                }
+
+            }
+
+            switch(this->nextTok.getType())
+            {
+                case PLUS:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->term() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(PLUS);
+
+
+                    return res_binop;
+                    break;
+                case MINUS:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->term() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(MINUS);
+
+
+                    return res_binop;
+                    break;
+                default:
+                    break;
+
+            }
+
+
+            return res;
+
+        }
+
+        AstNode* comparation()
+        {
+            AstNode* res = nullptr, *res_binop = nullptr;
+
+            res = this->term();
+            if(res)
+            {
+                if(res->getToken().getType() == NONE)
+                {
+                    res->setToken(this->curTok);
+                }
+
+            }
+
+            //eat();
+            switch(this->nextTok.getType())
+            {
+                case LESS:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->comparation() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(LESS);
+
+
+                    return res_binop;
+                    break;
+                case LEQUAL:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->comparation() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(LEQUAL);
+
+
+                    return res_binop;
+                    break;
+                case BIGGER:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->comparation() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(BIGGER);
+
+
+                    return res_binop;
+                    break;
+                case BEQUAL:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->comparation() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(BEQUAL);
 
 
                     return res_binop;
@@ -211,6 +432,62 @@ class Parser
             }
 
             return res;
+
+        }
+
+        AstNode* equality()
+        {
+            AstNode* res = nullptr, *res_binop = nullptr;
+            eat();
+            res = this->comparation();
+
+            if(res)
+            {
+                if(res->getToken().getType() == NONE)
+                {
+                    res->setToken(this->curTok);
+                }
+
+            }
+
+            //eat();
+            switch(this->nextTok.getType())
+            {
+                case EQUAL:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->equality() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(PLUS);
+
+
+                    return res_binop;
+                    break;
+                case DIFF:
+                    eat();
+                    res_binop = new AstNode();
+                    res_binop->setToken(this->curTok);
+                    eat();
+
+                    res_binop->setLeft(res);
+                    res_binop->setRight( this->equality() );
+                    res_binop->setType(ast_binop);
+                    res_binop->setOpType(DIFF);
+
+
+                    return res_binop;
+                    break;
+                default:
+                    break;
+
+            }
+
+            return res;
+
         }
 
         // -------------- Sentencias ------------------
@@ -254,9 +531,9 @@ class Parser
 
                             eat();
 
-                            res->setLeft(this->factor());
+                            res->setLeft(this->equality());
 
-                            if(this->nextTok.getType() != ENDL)
+                            if(this->nextTok.getType() != ENDL && res->getLeft() != nullptr)
                             {
                                 parseErrorExpected(this->curTok.getLine(), "salto de linea", this->nextTok.getText());
                                 this->errors++;
@@ -268,7 +545,9 @@ class Parser
 
                             break;
                         default:
-                            //error
+                            parseErrorExpected(this->curTok.getLine(), "Una llamada o asignacion", this->curTok.getText());
+                            this->errors++;
+                            return nullptr;
                             break;
                     }
 
@@ -465,7 +744,7 @@ class Parser
                     res = nullptr;
                     break;
                 }
-                res->addArg(this->sentence());
+                res->addArgEnd(this->sentence());
 
             }
 
@@ -517,6 +796,82 @@ class Parser
         {
             this->tokens = tokens;
             this->ast = Ast(this->algorithm_block());
+        }
+
+        void showAst(AstNode* a, int level)
+        {
+
+            if(a)
+            {
+                switch(a->getType())
+                {
+                case ast_algorithm_block:
+                    cout << setw(level) << " " << "Algoritmo" << endl;
+                    for(auto i: a->getSentences())
+                    {
+                        showAst(i, level+2);
+                    }
+                    break;
+                case ast_vardeclblock:
+                    cout << setw(level) << " " << "Declaracion de variables" << endl;
+                    for(auto i: a->getSentences())
+                    {
+                        if(i)
+                        {
+                            showAst(i, level+2);
+                        }
+                    }
+                    break;
+                case ast_vardecl:
+                    cout << setw(level) << " " << "Declaracion" << endl;
+                    for(auto i: a->getSentences())
+                    {
+                        if(i)
+                        {
+                            showAst(i, level+2);
+                        }
+                    }
+                    break;
+                case ast_sentences:
+                    cout << setw(level) << " " << "Codigo" << endl;
+                    for(auto i: a->getSentences())
+                    {
+                        if(i)
+                        {
+                            showAst(i, level+2);
+                        }
+
+                    }
+                    break;
+                case ast_varassign:
+                    cout << setw(level) << " " << "Asignacion de variable" << endl;
+                    showAst(a->getLeft(), level+2);
+                    break;
+                case ast_binop:
+                    cout << setw(level) << " " << "Operacion binaria" << " <-> "<< a->getToken().getText()<< endl;
+
+                    showAst(a->getLeft(), level+2);
+                    showAst(a->getRight(), level+2);
+                    break;
+                case ast_unop:
+                    cout << setw(level) << " " << "Operacion unaria" << " <-> "<< a->getToken().getText()<< endl;
+
+                    showAst(a->getLeft(), level+2);
+                    break;
+                case ast_number:
+                    cout << setw(level) << " " << "numero entero" << " <-> "<< a->getToken().getText()<<endl;
+                    break;
+                case ast_flnumber:
+                    cout << setw(level) << " " << "numero real" << " <-> "<< a->getToken().getText()<< endl;
+                    break;
+                case ast_bool:
+                    cout << setw(level) << " " << "valor logico" << " <-> "<< a->getToken().getText()<< endl;
+                    break;
+                case ast_var:
+                    cout << setw(level) << " " << "variable" << " <-> "<< a->getToken().getText()<< endl;
+                }
+            }
+
         }
 
 

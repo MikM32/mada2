@@ -34,9 +34,12 @@ int main()
 
     Parser par;
     Semantic sem;
+    //lex.showTokens();
     par.parse(tokens);
 
     Ast a = par.getAst();
+
+    par.showAst(a.getRoot(), 1);
 
 
     if(!par.getErrors())

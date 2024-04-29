@@ -69,6 +69,21 @@ class Token{
                 case PLUS:
                     cout << "PLUS : " << this->text <<endl;
                     break;
+                case MINUS:
+                    cout << "MINUS: " << this->text << endl;
+                    break;
+                case ASTER:
+                    cout << "ASTERISCO: " << this->text << endl;
+                    break;
+                case RBAR:
+                    cout << "RBAR: " << this->text << endl;
+                    break;
+                case DIV:
+                    cout << "DIV: "<< this->text << endl;
+                    break;
+                case MOD:
+                    cout << "MOD: "<< this->text << endl;
+                    break;
                 case ALGORITMO:
                     cout << "ALGORITMO : " << this->text <<endl;
                     break;
@@ -79,28 +94,37 @@ class Token{
                     cout << "CADENA : "<< this->text << endl;
                     break;
                 case ASIGN:
-                    cout << "ASIGNACION : <-" << endl;
+                    cout << "ASIGNACION : "<< this->text << endl;
                     break;
                 case WRITE:
                     cout << "ESCRIBIR" << endl;
                     break;
                 case OPEN_PAREN:
-                    cout << "OPEN_PARENT : ( " <<endl;
+                    cout << "OPEN_PARENT : "<< this->text << endl;
                     break;
                 case CLOS_PAREN:
-                    cout << "CLOSED_PARENT : )" << endl;
+                    cout << "CLOSED_PARENT : "<< this->text << endl;
                     break;
                 case COMMA:
-                    cout << "COMMA : ," << endl;
-                    break;
-                case ASTER:
-                    cout << "ASTERISC : *" << endl;
+                    cout << "COMMA : " << this->text << endl;
                     break;
                 case VERDADERO:
                     cout << "TRUE : verdadero" <<endl;
                     break;
                 case FALSO:
                     cout << "FALSE : falso" << endl;
+                    break;
+                case VAR:
+                    cout << "VAR : var" << endl;
+                    break;
+                case ENTERO:
+                    cout << "ENTERO: entero" << endl;
+                    break;
+                case INICIO:
+                    cout << "INICIO: inicio" << endl;
+                    break;
+                case FIN:
+                    cout << "FIN: fin" << endl;
                     break;
                 default:
                     debugErrorUnkType(this->type);

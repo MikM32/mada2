@@ -31,11 +31,16 @@ enum TokenType
     ASIGN,
     LESS,
     BIGGER,
+    LEQUAL,
+    BEQUAL,
+    EQUAL,
+    DIFF,
     OPEN_PAREN,
     CLOS_PAREN,
     COMMA,
     WRITE,
     READ,
+
 };
 
 #endif // TOKEN_TYPES_H_INCLUDED
