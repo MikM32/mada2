@@ -492,6 +492,101 @@ class Parser
 
         // -------------- Sentencias ------------------
 
+        AstNode* for_loop()
+        {
+            AstNode* res = new AstNode();
+
+            if(this->curTok.getType() != PARA)
+            {
+                parseErrorExpected(this->curTok.getLine(), "para",this->curTok.getText());
+                this->errors++;
+                delete res;
+                return nullptr;
+            }
+
+            res->setToken(this->curTok);
+            res->setType(ast_forloop);
+
+            eat();
+            res->setLeft(var_assign()); // una asignacion
+
+            //eat();
+            if(this->curTok.getType() != HASTA)
+            {
+                parseErrorExpected(this->curTok.getLine(), "hasta",this->curTok.getText());
+                this->errors++;
+                delete res;
+                return nullptr;
+            }
+
+            //eat();
+            res->setRight(equality()); // Una expresion
+
+
+            eat();
+            if(this->curTok.getType() != HACER)
+            {
+                parseErrorExpected(this->curTok.getLine(), "hacer ",this->curTok.getText());
+                this->errors++;
+                delete res;
+                return nullptr;
+            }
+            eat();
+
+            while(this->curTok.getType() != FPARA)
+            {
+                if(this->tokIndex >= this->tokens.size())
+                {
+                    parseErrorExpected(this->curTok.getLine(), "fpara",this->curTok.getText());
+                    this->errors++;
+                    delete res;
+                    return nullptr;
+                    break;
+                }
+                res->addArgEnd(sentence());
+            }
+
+            eat();
+
+            return res;
+
+        }
+
+        AstNode* var_assign()
+        {
+            AstNode* res = new AstNode();
+
+            if(this->curTok.getType() != ID)
+            {
+                parseErrorExpected(this->curTok.getLine(), "identificador de variable", this->curTok.getText());
+                this->errors++;
+                delete res;
+                return nullptr;
+            }
+
+            res->setType(ast_varassign);
+            res->setToken(this->curTok);
+
+            eat();
+
+            if(this->curTok.getType() != ASIGN)
+            {
+                parseErrorExpected(this->curTok.getLine(), "<-", this->curTok.getText());
+                this->errors++;
+                delete res;
+                return nullptr;
+            }
+
+
+            res->setLeft(this->equality());
+
+
+
+            eat();
+
+            return res;
+        }
+
         AstNode* sentence() // Evalua sentencias y las guarda de forma secuencial
         {
             AstNode* res = nullptr;
@@ -526,6 +621,7 @@ class Parser
                             res->setToken(this->curTok);
                             break;
                         case ASIGN:
+                            /*
                             res->setType(ast_varassign);
                             res->setToken(this->curTok);
 
@@ -541,7 +637,18 @@ class Parser
                             }
 
                             eat();
+                            //eat();*/
+
+                            res = var_assign();
+
                             //eat();
+                            if(this->curTok.getType() != ENDL && res->getLeft() != nullptr)
+                            {
+                                parseErrorExpected(this->curTok.getLine(), "salto de linea", this->curTok.getText());
+                                this->errors++;
+                                delete res;
+                                return nullptr;
+                            }
 
                             break;
                         default:
@@ -566,11 +673,13 @@ class Parser
                         this->errors++;
                     }
 
+                    res->addArg(this->equality());
+                    eat();
 
-                    while(this->curTok.getType() != COMMA && this->curTok.getType() != CLOS_PAREN)
+                    while(this->curTok.getType() == COMMA && this->curTok.getType() != CLOS_PAREN)
                     {
 
-                        res->addArg(this->factor());
+                        res->addArg(this->equality());
                         eat();
                     }
 
@@ -582,6 +691,11 @@ class Parser
 
                     res->setType(ast_callwrite);
                     res->setToken(this->curTok);
+                    break;
+
+                case PARA:
+
+                    res = for_loop();
                     break;
 
             }
@@ -823,7 +937,7 @@ class Parser
                     }
                     break;
                 case ast_vardecl:
-                    cout << setw(level) << " " << "Declaracion" << endl;
+                    cout << setw(level) << " " << "Declaracion" << " <-> "<< a->getToken().getText()<< endl;
                     for(auto i: a->getSentences())
                     {
                         if(i)
@@ -844,8 +958,30 @@ class Parser
                     }
                     break;
                 case ast_varassign:
-                    cout << setw(level) << " " << "Asignacion de variable" << endl;
+                    cout << setw(level) << " " << "Asignacion de variable" << " <-> "<< a->getToken().getText()<< endl;
                     showAst(a->getLeft(), level+2);
+                    break;
+                case ast_forloop:
+                    cout << setw(level) << " " << "Ciclo para" << endl;
+                    for(auto i: a->getSentences())
+                    {
+                        if(i)
+                        {
+                            showAst(i, level+2);
+                        }
+
+                    }
+                    break;
+                case ast_callwrite:
+                    cout << setw(level) << " " << "Escribir en pantalla" << endl;
+                    for(auto i: a->getSentences())
+                    {
+                        if(i)
+                        {
+                            showAst(i, level+2);
+                        }
+
+                    }
                     break;
                 case ast_binop:
                     cout << setw(level) << " " << "Operacion binaria" << " <-> "<< a->getToken().getText()<< endl;

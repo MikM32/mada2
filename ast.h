@@ -13,6 +13,7 @@ typedef union
     double flt;
     char chr;
     bool boolean;
+    string* str;
 
 }AstElemUnion;
 
@@ -29,6 +30,7 @@ enum AstNodeType
     ast_var,
     ast_callproc,
     ast_callwrite,
+    ast_forloop,
     ast_sentences,
     ast_varassign,
     ast_vardecl,

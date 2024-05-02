@@ -40,6 +40,10 @@ enum TokenType
     COMMA,
     WRITE,
     READ,
+    PARA,
+    HASTA,
+    HACER,
+    FPARA
 
 };
 

@@ -84,6 +84,11 @@ void semanticErrorVarWrongScope(int line, string id)
     cout << "Error semantico en la linea: " << line << ":" << " La variable \""<< id <<"\" no ha sido declarada en este contexto" <<endl;
 }
 
+void semanticErrorTypeNotDef(int line, string id)
+{
+    cout << "Error semantico en la linea: " << line << ":" << " El tipo \""<< id <<"\" no ha sido definido previamente" <<endl;
+}
+
 // Otros Errores
 
 #endif // ERRORS_H_INCLUDED

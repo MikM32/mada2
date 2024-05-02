@@ -5,6 +5,7 @@
 #include "lexer.h"
 #include "Parser.h"
 #include "semantic.h"
+#include "vm_compiler.h"
 
 using namespace std;
 
@@ -34,6 +35,9 @@ int main()
 
     Parser par;
     Semantic sem;
+    MadaVmCompiler comp;
+    Vm mvm;
+
     //lex.showTokens();
     par.parse(tokens);
 
@@ -47,11 +51,23 @@ int main()
         sem.check(a.getRoot());
     }
 
-
-
     cout << "Codigo lexeado con " << lex.getErrors() << " errores "<<endl;
     cout << "Codigo parseado con "<< par.getErrors() << " errores "<<endl;
     cout << "Codigo semantizado con "<< sem.getErrors() << " errores" <<endl;
+
+    if(!sem.getErrors())
+    {
+        comp= MadaVmCompiler(a, sem.getVars());
+        comp.compile(a.getRoot());
+        comp.showBytecodes();
+        mvm = Vm(comp.getByteCodes());
+
+        cout << endl << "Ejecutando..." << endl;
+        mvm.eval(false);
+        cout << endl << "Ejecucion finalizada."<<endl;
+
+    }
+
 
     return 0;
 }

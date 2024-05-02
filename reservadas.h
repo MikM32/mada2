@@ -26,5 +26,6 @@
 #define R_BOOL "logico"
 #define R_CHAR "caracter"
 #define R_RET "retornar"
+#define R_TYPES "tipo"
 
 #endif // RESERVADAS_H_INCLUDED

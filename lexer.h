@@ -82,6 +82,22 @@ int reservedWord(string word) // Funcion que devuelve el tipo de palabra reserva
     {
         return CARACTER;
     }
+    else if(word == R_FOR)
+    {
+        return PARA;
+    }
+    else if(word == R_UNT)
+    {
+        return HASTA;
+    }
+    else if(word == R_DO)
+    {
+        return HACER;
+    }
+    else if(word == R_EFOR)
+    {
+        return FPARA;
+    }
     else
     {
         return 0;

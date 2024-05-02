@@ -6,6 +6,9 @@
 #include "ast.h"
 using namespace std;
 
+
+
+
 class Variable
 {
     private:
@@ -13,6 +16,7 @@ class Variable
         AstNodeType elemType;
         int scope=0;
         int type;
+
     public:
 
         Variable()
@@ -102,6 +106,8 @@ class Semantic
     private:
         Ast ast;
         map<string, Variable> vars;
+        map<string, AstNodeType> types = {  {R_INT, ast_number},
+                                            {R_FLOAT, ast_flnumber}};
 
         int errors;
     public:
@@ -109,6 +115,7 @@ class Semantic
     Semantic()
     {
         this->errors = 0;
+        //etc
     }
 
     Semantic(Ast ast)
@@ -140,7 +147,6 @@ class Semantic
             case ASTER:
             case PLUS:
             case MINUS:
-            case RBAR:
             case LESS:
             case LEQUAL:
             case BIGGER:
@@ -183,6 +189,31 @@ class Semantic
 
                 return ast_number;*/
                 break;
+            case RBAR:
+                switch(op1+op2)
+                {
+                    case ast_number+ast_number:
+                    case ast_flnumber+ast_number:
+                    case ast_flnumber+ast_flnumber:
+                        return ast_flnumber;
+                        break;
+                    default:
+                        //error
+                        break;
+                }
+                break;
+            case DIV:
+            case MOD:
+                if(op1 == ast_number && op2 == ast_number)
+                {
+                    return ast_number;
+                }
+                else
+                {
+                    //error
+                    return ast_none;
+                }
+                break;
             //booleanos
             default:
                 break;
@@ -218,32 +249,46 @@ class Semantic
         return res;
     }
 
+    AstNodeType checkType(AstNode* astRoot)
+    {
+        map<string, AstNodeType>::iterator a = this->types.find(astRoot->getToken().getText());
+
+        if(a != this->types.end())
+        {
+            return a->second;
+        }
+        else
+        {
+            this->errors++;
+            semanticErrorTypeNotDef(astRoot->getToken().getLine(), astRoot->getToken().getText());
+            return ast_none;
+        }
+    }
+
     AstNodeType varDecl(AstNode* vardecl)
     {
-        for(auto i: vardecl->getSentences())
-        {
-            if(i != nullptr)
-            {
-                TokenType t = vardecl->getToken().getType();
-                Variable v = Variable( t);
+        AstNodeType varType = checkType(vardecl);
 
-                switch(t)
+        if(varType)
+        {
+            for(auto i: vardecl->getSentences())
+            {
+                if(i != nullptr)
                 {
-                    case ENTERO:
-                        v.setElemType(ast_number);
-                        break;
-                    case REAL:
-                        v.setElemType(ast_flnumber);
-                        break;
-                    default:
-                        break;
+                    TokenType t = vardecl->getToken().getType();
+                    Variable v = Variable( t);
+                    v.setElemType(varType);
+
+
+                    this->vars[i->getToken().getText()] =  v;
                 }
-                this->vars[i->getToken().getText()] =  v;
+
             }
 
+            return ast_vardecl;
         }
 
-        return ast_vardecl;
+        return ast_none;
     }
 
     AstNodeType varDeclBlock(AstNode* varblock)
@@ -291,6 +336,19 @@ class Semantic
 
                 }
 
+                break;
+            case ast_callwrite:
+
+                sentences = astRoot->getSentences();
+
+                for(auto i : sentences)
+                {
+                    if(i != nullptr)
+                    {
+                       res = check(i);
+                    }
+
+                }
                 break;
             case ast_varassign:
 

@@ -3,12 +3,13 @@
 el interprete solo soporta declaraciones sencillas y asignaciones sencillas de variables}
 
 algoritmo test
-
 var
-    entero: a, f
-    real: x
+    entero: i, a
 inicio
-    x <- -2+3.2*5
-    a <- 2 * 2
-    f <- 2
+
+    a <- 10
+    para i <- 1 hasta a hacer
+        escribir(i*2)
+    fpara
+
 fin
